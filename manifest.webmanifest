@@ -1,0 +1,12 @@
+{
+  "name": "Nexora Link Control Center",
+  "short_name": "Nexora Link",
+  "description": "Nexora Link API bridge and customization dashboard",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0c1020",
+  "theme_color": "#101323",
+  "icons": [
+    { "src": "/assets/nexora-mark.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

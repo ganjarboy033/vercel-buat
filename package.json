@@ -1,7 +1,7 @@
 {
-  "name": "nexora-link",
-  "version": "1.0.0",
-  "description": "Nexora Link — API bridge (Vercel) untuk Nexora Cloud: OAuth Google/GitHub, penukar token, dan proxy Telegram Bot API.",
+  "name": "nexora-link-control-center",
+  "version": "1.1.0",
+  "description": "Nexora Link API bridge for Nexora Cloud with a customizable Vercel dashboard.",
   "private": true,
   "type": "module",
   "engines": { "node": ">=20" },

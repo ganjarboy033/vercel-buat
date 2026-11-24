@@ -1,173 +1,224 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Nexora Link — Cloud Bridge App</title>
-  <style>
-    :root {
-      --bg: #090d16;
-      --surface: #111827;
-      --surface-2: #1f2937;
-      --border: #2d3748;
-      --primary: #38bdf8;
-      --primary-dark: #0284c7;
-      --success: #10b981;
-      --danger: #ef4444;
-      --text: #f3f4f6;
-      --muted: #9ca3af;
-    }
-    * { box-sizing: border-box; font-family: system-ui, -apple-system, sans-serif; }
-    body { margin: 0; background: var(--bg); color: var(--text); padding: 16px; display: flex; justify-content: center; }
-    .app { width: 100%; max-width: 480px; display: flex; flex-direction: column; gap: 14px; padding-bottom: 40px; }
-    header { display: flex; align-items: center; justify-content: space-between; background: var(--surface); padding: 14px 16px; border-radius: 16px; border: 1px solid var(--border); }
-    .brand h1 { margin: 0; font-size: 1.1rem; color: var(--primary); letter-spacing: 0.3px; }
-    .brand span { font-size: 0.75rem; color: var(--muted); }
-    .pill { font-size: 0.72rem; font-weight: 600; padding: 4px 10px; border-radius: 99px; background: rgba(16,185,129,0.15); color: var(--success); border: 1px solid rgba(16,185,129,0.3); }
-    .pill.err { background: rgba(239,68,68,0.15); color: var(--danger); border-color: rgba(239,68,68,0.3); }
-    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 16px; }
-    .card h2 { margin: 0 0 10px; font-size: 0.92rem; color: #e5e7eb; display: flex; align-items: center; justify-content: space-between; }
-    .grid-btn { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    button, .btn {
-      background: var(--surface-2); color: var(--text); border: 1px solid var(--border);
-      padding: 11px 12px; border-radius: 12px; font-size: 0.84rem; font-weight: 600;
-      cursor: pointer; text-align: center; text-decoration: none; display: inline-flex;
-      align-items: center; justify-content: center; gap: 6px; transition: 0.15s;
-    }
-    button:active, .btn:active { transform: scale(0.98); }
-    .btn-primary { background: var(--primary-dark); border-color: var(--primary); color: #fff; }
-    .field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
-    label { font-size: 0.76rem; color: var(--muted); }
-    input {
-      background: var(--bg); border: 1px solid var(--border); color: var(--text);
-      padding: 10px 12px; border-radius: 10px; font-size: 0.85rem; outline: none;
-    }
-    input:focus { border-color: var(--primary); }
-    pre {
-      background: #05080f; border: 1px solid var(--border); border-radius: 10px;
-      padding: 12px; font-size: 0.76rem; color: #a5f3fc; overflow-x: auto;
-      margin: 0; max-height: 220px; white-space: pre-wrap; word-break: break-all;
-    }
-    .copy-row { display: flex; gap: 8px; }
-    .copy-row input { flex: 1; color: var(--primary); font-family: monospace; font-size: 0.78rem; }
-  </style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101323">
+  <meta name="description" content="Nexora Link — pusat koneksi, integrasi cloud, API bridge, dan Theme Studio.">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Nexora Link — Control Center</title>
+  <link rel="icon" href="/assets/nexora-mark.svg" type="image/svg+xml">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="stylesheet" href="/assets/css/styles.css">
+  <script defer src="/assets/js/app.js"></script>
 </head>
-<body>
-  <div class="app">
-    <header>
-      <div class="brand">
-        <h1>NEXORA LINK</h1>
-        <span>Bridge & OAuth Client</span>
+<body data-mode="dark" data-nav="bottom">
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar" aria-label="Navigasi utama">
+      <a class="brand" href="#overview" data-page-link="overview" aria-label="Nexora Link beranda">
+        <span class="brand-mark" id="brandMark"><img id="brandLogo" alt="" hidden><span id="brandFallback">N</span></span>
+        <span class="brand-copy"><strong id="brandName">Nexora Link</strong><small id="brandSubtitle">Control Center</small></span>
+      </a>
+      <div class="workspace-label">WORKSPACE</div>
+      <nav class="side-nav">
+        <button class="nav-item active" data-page="overview"><span class="nav-icon">⌂</span><span>Ringkasan</span></button>
+        <button class="nav-item" data-page="theme"><span class="nav-icon">◈</span><span>Theme Studio</span><span class="nav-tag">LIVE</span></button>
+        <button class="nav-item" data-page="integrations"><span class="nav-icon">⛓</span><span>Integrasi</span></button>
+        <button class="nav-item" data-page="system"><span class="nav-icon">⚙</span><span>API & Sistem</span></button>
+        <button class="nav-item" data-page="guide"><span class="nav-icon">▤</span><span>Panduan Pemula</span></button>
+      </nav>
+      <div class="sidebar-spacer"></div>
+      <div class="sidebar-status" id="sidebarStatus">
+        <span class="status-dot pending" id="sidebarDot"></span>
+        <span><strong id="sidebarStatusText">Belum diperiksa</strong><small>Server Nexora Link</small></span>
+        <button class="icon-button tiny" id="sidebarRefresh" title="Periksa server" aria-label="Periksa server">↻</button>
       </div>
-      <div id="statusPill" class="pill">Memeriksa...</div>
-    </header>
+      <div class="sidebar-foot"><span>VORTEX CORE</span><span>bagja.dev</span></div>
+    </aside>
 
-    <!-- Base URL untuk dipasang di APK Nexora Cloud -->
-    <div class="card">
-      <h2>URL Server (Untuk Aplikasi Android)</h2>
-      <div class="copy-row">
-        <input id="baseUrl" type="text" readonly />
-        <button class="btn-primary" onclick="copyUrl()">Salin</button>
-      </div>
-    </div>
+    <div class="main-column">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="icon-button mobile-menu" id="mobileMenu" aria-label="Buka navigasi">☰</button>
+          <div><div class="eyebrow">NEXORA ECOSYSTEM / CONTROL PANEL</div><h1 id="pageTitle">Ringkasan</h1></div>
+        </div>
+        <div class="topbar-actions">
+          <span class="environment-pill"><span class="status-dot pending" id="topStatusDot"></span><span id="topStatusText">Checking</span></span>
+          <button class="icon-button" id="topRefresh" title="Ping server" aria-label="Ping server">↻</button>
+          <button class="avatar-button" id="topBrandAvatar" title="Pengaturan branding">N</button>
+        </div>
+      </header>
 
-    <!-- Koneksi OAuth Asli -->
-    <div class="card">
-      <h2>Hubungkan Akun Cloud</h2>
-      <div class="grid-btn">
-        <a href="/api/google/start" class="btn btn-primary">Login Google Drive</a>
-        <a href="/api/github/start" class="btn btn-primary">Login GitHub</a>
-        <button onclick="callApi('/api/info')">Cek /api/info</button>
-        <button onclick="callApi('/api/health')">Cek /api/health</button>
-      </div>
-    </div>
+      <main id="mainContent">
+        <!-- OVERVIEW -->
+        <section class="page active" id="page-overview" data-title="Ringkasan">
+          <div class="welcome-banner">
+            <div class="welcome-copy">
+              <div class="kicker"><span class="kicker-line"></span> CLOUD CONNECTION HUB</div>
+              <h2>Semua koneksi.<br><span>Satu pusat kendali.</span></h2>
+              <p>Kelola Nexora Link, konektor cloud, status API, dan tampilan dashboard dari satu tempat.</p>
+              <div class="welcome-actions"><button class="button primary" data-go="integrations">Kelola integrasi <span>↗</span></button><button class="button ghost-light" data-go="theme">Kustomisasi dashboard</button></div>
+            </div>
+            <div class="orb-scene" aria-hidden="true"><div class="orb orb-one"></div><div class="orb orb-two"></div><div class="orb-ring ring-one"></div><div class="orb-ring ring-two"></div><div class="orb-core">N<span>+</span></div><div class="orbit-node node-a">G</div><div class="orbit-node node-b">GH</div><div class="orbit-node node-c">TG</div></div>
+            <div class="banner-bottom"><span>VORTEX CORE <b>•</b> NEXORA LINK</span><span>API BRIDGE <i></i> READY TO CONNECT</span></div>
+          </div>
 
-    <!-- Bridge Telegram / Link Exchange -->
-    <div class="card">
-      <h2>Telegram & Link Bridge</h2>
-      <div class="field">
-        <label>Bot Token (Opsional jika sudah di ENV Vercel)</label>
-        <input id="tgToken" type="password" placeholder="123456:ABC-DEF..." />
-      </div>
-      <div class="grid-btn">
-        <button onclick="testTelegram()">Tes Bot (getMe)</button>
-        <button onclick="testExchange()">Tes /api/link/exchange</button>
-      </div>
-    </div>
+          <div class="section-heading"><div><div class="eyebrow">LIVE OVERVIEW</div><h2>Status layanan</h2><p>Ringkasan konfigurasi yang dibaca dari server dan browser ini.</p></div><button class="button subtle" id="overviewRefresh">↻ Periksa sekarang</button></div>
+          <div class="stat-grid">
+            <article class="stat-card"><div class="stat-top"><span class="stat-icon purple">⌁</span><span class="stat-label">SERVER</span></div><strong class="stat-value" id="serverMetric">—</strong><span class="stat-foot" id="serverMetricFoot">Menunggu pemeriksaan</span></article>
+            <article class="stat-card"><div class="stat-top"><span class="stat-icon blue">G</span><span class="stat-label">GOOGLE</span></div><strong class="stat-value" id="googleMetric">—</strong><span class="stat-foot">Drive & Photos OAuth</span></article>
+            <article class="stat-card"><div class="stat-top"><span class="stat-icon dark">GH</span><span class="stat-label">GITHUB</span></div><strong class="stat-value" id="githubMetric">—</strong><span class="stat-foot">OAuth App bridge</span></article>
+            <article class="stat-card"><div class="stat-top"><span class="stat-icon teal">➤</span><span class="stat-label">TELEGRAM</span></div><strong class="stat-value" id="telegramMetric">—</strong><span class="stat-foot">Bot API proxy</span></article>
+          </div>
 
-    <!-- Output Response Asli -->
-    <div class="card">
-      <h2>
-        <span>Respons Server</span>
-        <button style="padding:4px 8px;font-size:0.72rem" onclick="document.getElementById('output').textContent='Siap.'">Bersihkan</button>
-      </h2>
-      <pre id="output">Menghubungkan ke backend...</pre>
+          <div class="content-grid overview-grid">
+            <section class="panel panel-large">
+              <div class="panel-heading"><div><div class="eyebrow">CONNECTED SERVICES</div><h3>Jalur integrasi</h3></div><button class="text-button" data-go="integrations">Lihat semua ↗</button></div>
+              <div class="integration-list">
+                <div class="integration-row"><div class="service-icon google">G</div><div class="service-info"><strong>Google Drive & Photos</strong><small>OAuth aman melalui PKCE dan tiket terenkripsi</small></div><span class="mini-status" id="googlePill">Memeriksa</span></div>
+                <div class="integration-row"><div class="service-icon github">GH</div><div class="service-info"><strong>GitHub</strong><small>OAuth bridge atau Personal Access Token di aplikasi</small></div><span class="mini-status" id="githubPill">Memeriksa</span></div>
+                <div class="integration-row"><div class="service-icon telegram">➤</div><div class="service-info"><strong>Telegram Bot API</strong><small>Proxy server dengan allowlist metode</small></div><span class="mini-status" id="telegramPill">Memeriksa</span></div>
+                <div class="integration-row"><div class="service-icon cloud">N</div><div class="service-info"><strong>Nexora Cloud Backend</strong><small>Backend katalog terpisah — opsional</small></div><span class="mini-status neutral">Eksternal</span></div>
+              </div>
+            </section>
+            <section class="panel activity-panel">
+              <div class="panel-heading"><div><div class="eyebrow">BROWSER ACTIVITY</div><h3>Aktivitas terbaru</h3></div><span class="live-label"><i></i> LOCAL</span></div>
+              <div class="activity-list" id="activityPreview"><div class="empty-state compact"><span>◷</span><p>Belum ada aktivitas. Jalankan ping untuk memulai.</p></div></div>
+              <button class="button full subtle" data-go="system">Buka log aktivitas</button>
+            </section>
+          </div>
+
+          <section class="panel endpoint-panel">
+            <div class="panel-heading"><div><div class="eyebrow">QUICK ACCESS</div><h3>Endpoint utama</h3></div><span class="code-pill">Vercel Functions</span></div>
+            <div class="endpoint-grid">
+              <div class="endpoint-item"><span class="method get">GET</span><code>/health</code><button class="copy-button" data-copy-path="/health" title="Salin endpoint">▢</button><small>Status publik server</small></div>
+              <div class="endpoint-item"><span class="method get">GET</span><code>/api/info</code><button class="copy-button" data-copy-path="/api/info" title="Salin endpoint">▢</button><small>Informasi provider (butuh API key)</small></div>
+              <div class="endpoint-item"><span class="method post">POST</span><code>/api/link/exchange</code><button class="copy-button" data-copy-path="/api/link/exchange" title="Salin endpoint">▢</button><small>Tukar kode PKCE aplikasi</small></div>
+            </div>
+          </section>
+        </section>
+
+        <!-- THEME STUDIO -->
+        <section class="page" id="page-theme" data-title="Theme Studio">
+          <div class="page-intro"><div><div class="eyebrow">PERSONALIZATION ENGINE</div><h2>Theme Studio</h2><p>Atur warna, permukaan, navigasi, dan identitas dashboard secara langsung. Perubahan tersimpan di browser ini.</p></div><div class="intro-actions"><button class="button subtle" id="exportConfig">⇩ Export JSON</button><button class="button subtle" id="importConfigButton">⇧ Import JSON</button><input type="file" id="importConfigFile" accept="application/json,.json" hidden><button class="button danger-outline" id="resetConfig">Reset default</button></div></div>
+          <div class="theme-layout">
+            <div class="theme-controls">
+              <section class="panel control-panel">
+                <div class="panel-heading"><div><div class="eyebrow">01 / COLOR SYSTEM</div><h3>Warna & mode</h3></div><span class="panel-mark">◈</span></div>
+                <div class="mode-switch" role="group" aria-label="Mode tema"><button data-mode-choice="dark" class="selected">☾ Dark</button><button data-mode-choice="light">☀ Light</button><button data-mode-choice="amoled">◐ AMOLED</button></div>
+                <div class="preset-grid">
+                  <button class="preset-card preset-aurora" data-preset="aurora"><span></span><strong>Aurora</strong><small>Violet / Indigo</small></button>
+                  <button class="preset-card preset-ocean" data-preset="ocean"><span></span><strong>Ocean</strong><small>Blue / Cyan</small></button>
+                  <button class="preset-card preset-emerald" data-preset="emerald"><span></span><strong>Emerald</strong><small>Green / Teal</small></button>
+                  <button class="preset-card preset-sunset" data-preset="sunset"><span></span><strong>Sunset</strong><small>Orange / Pink</small></button>
+                </div>
+                <div class="color-fields">
+                  <label class="color-field"><span>Warna utama / Accent</span><span class="color-input-wrap"><input type="color" id="accentColor"><input type="text" id="accentText" maxlength="7" aria-label="Kode warna utama"></span></label>
+                  <label class="color-field"><span>Background</span><span class="color-input-wrap"><input type="color" id="backgroundColor"><input type="text" id="backgroundText" maxlength="7" aria-label="Kode warna background"></span></label>
+                  <label class="color-field"><span>Warna kartu</span><span class="color-input-wrap"><input type="color" id="cardColor"><input type="text" id="cardText" maxlength="7" aria-label="Kode warna kartu"></span></label>
+                  <label class="color-field"><span>Warna teks</span><span class="color-input-wrap"><input type="color" id="textColor"><input type="text" id="textText" maxlength="7" aria-label="Kode warna teks"></span></label>
+                </div>
+              </section>
+              <section class="panel control-panel">
+                <div class="panel-heading"><div><div class="eyebrow">02 / SURFACE & LAYOUT</div><h3>Gaya & layout</h3></div><span class="panel-mark">▦</span></div>
+                <label class="range-control"><span><b>Kel lengkungan sudut</b><output id="radiusOutput">18 px</output></span><input type="range" id="radiusRange" min="0" max="32" value="18"></label>
+                <label class="range-control"><span><b>Glass blur</b><output id="blurOutput">16 px</output></span><input type="range" id="blurRange" min="0" max="30" value="16"></label>
+                <label class="range-control"><span><b>Ukuran font</b><output id="fontOutput">100%</output></span><input type="range" id="fontRange" min="85" max="120" value="100"></label>
+                <div class="field-group"><label for="navMode">Gaya navigasi untuk HP</label><select id="navMode"><option value="bottom">Bottom Tab</option><option value="sidebar">Sidebar / Drawer</option></select></div>
+                <div class="switch-row"><div><strong>Glassmorphism</strong><small>Permukaan transparan dan blur</small></div><label class="switch"><input type="checkbox" id="glassToggle" checked><span></span></label></div>
+              </section>
+            </div>
+            <div class="theme-preview-column">
+              <section class="panel preview-panel">
+                <div class="panel-heading"><div><div class="eyebrow">LIVE PREVIEW</div><h3>Pratinjau tampilan</h3></div><span class="live-label"><i></i> REAL TIME</span></div>
+                <div class="preview-window">
+                  <div class="preview-window-bar"><span></span><span></span><span></span><small>NEXORA / PREVIEW</small></div>
+                  <div class="preview-window-content"><div class="preview-mini-nav"><i></i><i></i><i></i><i></i></div><div class="preview-canvas"><div class="preview-hello"><small>WELCOME BACK</small><b>Cloud, connected.</b><span>Manage your digital space.</span></div><div class="preview-mini-cards"><div><i></i><b>Google</b><small>Connected</small></div><div><i></i><b>GitHub</b><small>Ready</small></div><div><i></i><b>Telegram</b><small>Online</small></div></div><div class="preview-chart"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div></div>
+                </div>
+                <p class="muted-note">Pratinjau ilustratif. Warna, radius, blur, dan skala font mengikuti pengaturan aktif.</p>
+              </section>
+              <section class="panel control-panel">
+                <div class="panel-heading"><div><div class="eyebrow">03 / BRAND IDENTITY</div><h3>Branding bebas</h3></div><span class="panel-mark">✦</span></div>
+                <div class="field-group"><label for="brandTitleInput">Nama web / dashboard</label><input type="text" id="brandTitleInput" maxlength="48" placeholder="Nexora Link"></div>
+                <div class="field-group"><label for="brandSubtitleInput">Subjudul</label><input type="text" id="brandSubtitleInput" maxlength="64" placeholder="Control Center"></div>
+                <div class="field-group"><label for="brandLogoInput">URL logo / ikon (opsional)</label><input type="url" id="brandLogoInput" placeholder="https://domain.com/logo.png"></div>
+                <div class="field-hint">Logo harus berupa URL gambar HTTPS atau HTTP yang dapat diakses publik. Bila gagal dimuat, ikon inisial digunakan.</div>
+              </section>
+            </div>
+          </div>
+        </section>
+
+        <!-- INTEGRATIONS -->
+        <section class="page" id="page-integrations" data-title="Integrasi">
+          <div class="page-intro"><div><div class="eyebrow">PROVIDER DIRECTORY</div><h2>Integrasi ekosistem</h2><p>Koneksi yang disediakan Nexora Link dan fitur cloud pada aplikasi Nexora Cloud.</p></div><button class="button primary" id="integrationRefresh">↻ Sinkronkan status</button></div>
+          <div class="integration-cards">
+            <article class="provider-card"><div class="provider-card-top"><div class="provider-logo google">G</div><span class="mini-status" id="googleStatusCard">Belum dicek</span></div><h3>Google Drive & Photos</h3><p>OAuth Google diamankan dengan PKCE. Nexora Cloud menggunakan access token untuk berkomunikasi langsung dengan layanan Google.</p><div class="capability-list"><span>✓ Drive: list / upload / download</span><span>✓ Drive: rename / move / copy / trash</span><span>✓ Photos: upload & media buatan aplikasi</span><span>✓ Photos Picker: impor pilihan pengguna</span></div><div class="provider-meta"><b>Scopes</b><code>drive_file · photos_upload · photos_picker</code></div><div class="provider-actions"><button class="button subtle copy-callback" data-copy-value="/api/google/callback">Salin callback URI</button><a class="button outline-link" href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener">Google Cloud ↗</a></div></article>
+            <article class="provider-card"><div class="provider-card-top"><div class="provider-logo github">GH</div><span class="mini-status" id="githubStatusCard">Belum dicek</span></div><h3>GitHub</h3><p>OAuth bridge menyimpan client secret di server. Aplikasi juga mendukung Personal Access Token langsung untuk operasi repository.</p><div class="capability-list"><span>✓ OAuth login via Nexora Link</span><span>✓ Repository & file tree</span><span>✓ Baca / tulis / hapus / pindah / salin</span><span>✓ Sinkron pustaka di aplikasi</span></div><div class="provider-meta"><b>Callback</b><code>/api/github/callback</code></div><div class="provider-actions"><button class="button subtle copy-callback" data-copy-value="/api/github/callback">Salin callback URI</button><a class="button outline-link" href="https://github.com/settings/developers" target="_blank" rel="noopener">GitHub Developer ↗</a></div></article>
+            <article class="provider-card"><div class="provider-card-top"><div class="provider-logo telegram">➤</div><span class="mini-status" id="telegramStatusCard">Belum dicek</span></div><h3>Telegram Bot API</h3><p>Proxy Bot API menggunakan token yang disimpan sebagai Environment Variable Vercel dan metode yang diizinkan oleh allowlist.</p><div class="capability-list"><span>✓ getMe / getChat / getFile</span><span>✓ sendMessage / sendDocument</span><span>✓ copyMessage / forwardMessage</span><span>✓ Allowlist dapat dikonfigurasi</span></div><div class="provider-meta"><b>Route</b><code>POST /api/telegram/{method}</code></div><div class="provider-actions"><a class="button outline-link" href="https://t.me/BotFather" target="_blank" rel="noopener">Telegram BotFather ↗</a></div></article>
+            <article class="provider-card cloud-provider"><div class="provider-card-top"><div class="provider-logo nexora">N</div><span class="mini-status neutral">Layanan terpisah</span></div><h3>Nexora Cloud Backend</h3><p>Backend Node.js/PostgreSQL yang dirujuk proyek Android untuk katalog, arsip, statistik, aktivitas, backup, dan transfer file.</p><div class="capability-list"><span>✓ Katalog & pencarian file</span><span>✓ Statistik kapasitas & aktivitas</span><span>✓ Trash / restore / backup</span><span>✓ Transfer file melalui backend</span></div><div class="provider-meta"><b>API basis</b><code>/api/v1/...</code></div><div class="provider-actions"><button class="button subtle" data-go="system">Atur URL backend</button><span class="small-caption">Tidak termasuk dalam fungsi Vercel bridge ini.</span></div></article>
+          </div>
+          <div class="notice info-notice"><span>ⓘ</span><div><strong>Penting untuk Google Photos</strong><p>Dokumentasi proyek Nexora Cloud membedakan Photos Picker untuk mengimpor media pilihan pengguna dari Photos API untuk media yang dibuat aplikasi. Dashboard ini tidak mengambil isi Drive/Photos dan tidak menyimpan token Google di browser.</p></div></div>
+        </section>
+
+        <!-- SYSTEM -->
+        <section class="page" id="page-system" data-title="API & Sistem">
+          <div class="page-intro"><div><div class="eyebrow">SYSTEM CONFIGURATION</div><h2>API & sistem</h2><p>Atur endpoint yang dipakai dashboard ini, uji koneksi, dan lihat log aktivitas browser.</p></div><span class="local-only-label">BROWSER-LOCAL SETTINGS</span></div>
+          <div class="notice warning-notice"><span>⚠</span><div><strong>Pengaturan browser bukan Environment Variables Vercel.</strong><p>Nilai di bawah tersimpan di localStorage perangkat/browser ini. Perubahan tidak dapat mengubah rahasia server Vercel. Atur <code>NEXORA_API_KEY</code>, <code>BRIDGE_SECRET</code>, OAuth secret, dan token bot melalui Vercel → Project → Settings → Environment Variables.</p></div></div>
+          <div class="system-grid">
+            <section class="panel settings-panel">
+              <div class="panel-heading"><div><div class="eyebrow">01 / CONNECTION</div><h3>Endpoint & kredensial lokal</h3></div><span class="panel-mark">⌁</span></div>
+              <div class="field-group"><label for="bridgeUrlInput">Nexora Link URL (Vercel)</label><input type="url" id="bridgeUrlInput" placeholder="https://nama-proyek.vercel.app"><small>Basis URL untuk /health dan /api/info. Tanpa garis miring di akhir.</small></div>
+              <div class="field-group"><label for="apiKeyInput">NEXORA_API_KEY <span class="secret-badge">SENSITIF</span></label><div class="secret-input"><input type="password" id="apiKeyInput" autocomplete="off" placeholder="Masukkan API key server"><button class="reveal-button" data-reveal="apiKeyInput" type="button">Lihat</button></div><small>Dikirim sebagai header <code>x-nexora-key</code> hanya saat menguji /api/info.</small></div>
+              <div class="field-group"><label for="cloudBackendInput">Nexora Cloud Backend URL (opsional)</label><input type="url" id="cloudBackendInput" placeholder="https://backend-nexora.example.com"><small>Backend Node/PostgreSQL terpisah. Bridge ini tidak menyediakan rute katalog /api/v1.</small></div>
+              <div class="field-group"><label for="githubApiInput">GitHub API Base</label><input type="url" id="githubApiInput" placeholder="https://api.github.com"></div>
+              <div class="field-group"><label for="webhookInput">Webhook URL (opsional)</label><input type="url" id="webhookInput" placeholder="https://example.com/webhook"><small>Digunakan hanya ketika Anda menekan tombol uji webhook.</small></div>
+              <div class="field-actions"><button class="button primary" id="saveSystemSettings">Simpan konfigurasi</button><button class="button subtle" id="clearSecretFields">Kosongkan rahasia</button></div>
+            </section>
+            <section class="panel settings-panel">
+              <div class="panel-heading"><div><div class="eyebrow">02 / CLIENT BEHAVIOR</div><h3>Batas & timeout lokal</h3></div><span class="panel-mark">⏱</span></div>
+              <div class="field-group"><label for="uploadLimitInput">Batas unggah aplikasi (MB)</label><input type="number" id="uploadLimitInput" min="0" max="204800" step="1" value="0"><small>Catatan lokal untuk operator; tidak mengubah batas request Vercel atau transfer Android. Nilai 0 berarti tidak ditentukan.</small></div>
+              <div class="field-group"><label for="timeoutInput">Timeout koneksi (detik)</label><input type="number" id="timeoutInput" min="3" max="180" step="1" value="20"><small>Batas waktu saat dashboard melakukan ping dan tes koneksi.</small></div>
+              <div class="field-group"><label for="logRetentionInput">Jumlah log browser yang disimpan</label><select id="logRetentionInput"><option value="20">20 aktivitas</option><option value="50" selected>50 aktivitas</option><option value="100">100 aktivitas</option><option value="200">200 aktivitas</option></select></div>
+              <div class="switch-row"><div><strong>Simpan konfigurasi otomatis</strong><small>Perubahan form disimpan ke localStorage</small></div><label class="switch"><input type="checkbox" id="autoSaveToggle" checked><span></span></label></div>
+              <div class="switch-row"><div><strong>Catat aktivitas lokal</strong><small>Log hanya berasal dari dashboard browser ini</small></div><label class="switch"><input type="checkbox" id="loggingToggle" checked><span></span></label></div>
+              <div class="field-actions vertical"><button class="button subtle full" id="testBridgeButton">⌁ Ping Nexora Link</button><button class="button subtle full" id="testInfoButton">⚿ Test API Key /api/info</button><button class="button subtle full" id="testTelegramButton">➤ Test Telegram Bot API</button><button class="button subtle full" id="testBackendButton">☁ Test Nexora Cloud Backend</button><button class="button subtle full" id="testWebhookButton">↗ Kirim test webhook</button></div>
+            </section>
+          </div>
+          <section class="panel diagnostics-panel">
+            <div class="panel-heading"><div><div class="eyebrow">03 / DIAGNOSTICS</div><h3>Status server & provider</h3></div><button class="button subtle" id="diagnosticsRefresh">↻ Refresh</button></div>
+            <div class="diagnostic-summary" id="diagnosticSummary"><div class="empty-state compact"><span>◌</span><p>Tekan Ping Nexora Link untuk membaca status.</p></div></div>
+            <div class="provider-detail-grid" id="providerDetails"></div>
+          </section>
+          <section class="panel logs-panel">
+            <div class="panel-heading"><div><div class="eyebrow">04 / LOCAL EVENT STREAM</div><h3>Log aktivitas API</h3></div><div class="log-actions"><span class="live-label"><i></i> BROWSER LIVE</span><button class="text-button" id="clearLogsButton">Bersihkan log</button></div></div>
+            <div class="logs-table-wrap"><table class="logs-table"><thead><tr><th>WAKTU</th><th>JENIS</th><th>AKTIVITAS</th><th>RUTE</th></tr></thead><tbody id="logsBody"><tr><td colspan="4" class="empty-cell">Belum ada log.</td></tr></tbody></table></div>
+            <p class="muted-note">Log ini bukan log server Vercel. Untuk log fungsi server sebenarnya, buka Vercel → Project → Logs / Observability.</p>
+          </section>
+        </section>
+
+        <!-- GUIDE -->
+        <section class="page" id="page-guide" data-title="Panduan Pemula">
+          <div class="page-intro"><div><div class="eyebrow">ZERO TO DEPLOY</div><h2>Panduan pemula</h2><p>Ikuti urutan dari ekstrak ZIP, upload ke GitHub, deploy Vercel, hingga menyambungkan aplikasi Android Nexora Cloud.</p></div><span class="guide-level">LEVEL: PEMULA</span></div>
+          <div class="guide-layout">
+            <aside class="guide-index panel"><strong>ISI PANDUAN</strong><a href="#guide-github">01 · Upload ke GitHub</a><a href="#guide-vercel">02 · Deploy di Vercel</a><a href="#guide-env">03 · Environment Variables</a><a href="#guide-google">04 · Google Drive & Photos</a><a href="#guide-github-oauth">05 · GitHub OAuth</a><a href="#guide-telegram">06 · Telegram Bot</a><a href="#guide-android">07 · Sambungkan Android</a><a href="#guide-trouble">08 · Atasi error 404</a></aside>
+            <div class="guide-content">
+              <article class="panel guide-step" id="guide-github"><div class="step-number">01</div><div><div class="eyebrow">SOURCE CODE</div><h3>Upload proyek ke GitHub lewat HP</h3><ol><li>Unduh ZIP hasil proyek Nexora Link, lalu ekstrak memakai Files, ZArchiver, atau aplikasi pengelola arsip.</li><li>Buka GitHub melalui browser dan masuk ke akun Anda.</li><li>Buat repository baru, misalnya <code>nexora-link</code>. Pilih Public atau Private sesuai kebutuhan.</li><li>Buka repository → <b>Add file → Upload files</b>. Pilih semua isi folder hasil ekstrak: <code>index.html</code>, <code>vercel.json</code>, folder <code>api</code>, <code>lib</code>, dan aset lainnya.</li><li>Pastikan <code>index.html</code> dan <code>vercel.json</code> terlihat di root repository, bukan tertanam di dalam folder ZIP bertingkat. Tekan <b>Commit changes</b>.</li></ol><div class="notice info-notice"><span>ⓘ</span><div>Upload isi folder proyek, bukan file ZIP-nya saja. Struktur root yang benar adalah <code>index.html</code>, <code>vercel.json</code>, <code>api/</code>, <code>lib/</code>, dan <code>assets/</code> pada tingkat yang sama.</div></div></div></article>
+              <article class="panel guide-step" id="guide-vercel"><div class="step-number">02</div><div><div class="eyebrow">DEPLOYMENT</div><h3>Hubungkan GitHub ke Vercel</h3><ol><li>Buka <a href="https://vercel.com/new" target="_blank" rel="noopener">vercel.com/new</a> lalu login.</li><li>Pilih <b>Import Git Repository</b> dan pilih repository <code>nexora-link</code>.</li><li>Di pengaturan proyek, gunakan <b>Framework Preset: Other</b>.</li><li>Set <b>Root Directory</b> ke root repository (<code>.</code> / kosong / repository root), karena file utama sudah berada di sana.</li><li>Biarkan Build Command dan Output Directory kosong/default untuk proyek static + Vercel Functions ini. Jangan arahkan Output Directory ke folder yang tidak ada.</li><li>Tambahkan Environment Variables seperti pada langkah 03, lalu tekan Deploy.</li></ol></div></article>
+              <article class="panel guide-step" id="guide-env"><div class="step-number">03</div><div><div class="eyebrow">SERVER SECRETS</div><h3>Isi Environment Variables Vercel</h3><p>Buka Vercel → Project → <b>Settings → Environment Variables</b>. Buat variabel berikut. Nilai rahasia dibuat sendiri dan jangan dikirim ke orang lain.</p><div class="env-table"><div><code>NEXORA_API_KEY</code><span>Kunci akses aplikasi, minimal 32 karakter acak.</span><button data-copy-value="NEXORA_API_KEY" class="copy-button">▢</button></div><div><code>BRIDGE_SECRET</code><span>Rahasia enkripsi tiket; minimal 32 karakter. Jangan diganti setelah dipakai.</span><button data-copy-value="BRIDGE_SECRET" class="copy-button">▢</button></div><div><code>PUBLIC_BASE_URL</code><span>URL deploy HTTPS, misalnya https://nama-proyek.vercel.app</span><button data-copy-value="PUBLIC_BASE_URL" class="copy-button">▢</button></div><div><code>APP_REDIRECT_URI</code><span>Opsional. Default: nexoracloud://link</span><button data-copy-value="APP_REDIRECT_URI" class="copy-button">▢</button></div><div><code>GOOGLE_CLIENT_ID</code><span>Client ID dari Google Cloud OAuth Web application.</span><button data-copy-value="GOOGLE_CLIENT_ID" class="copy-button">▢</button></div><div><code>GOOGLE_CLIENT_SECRET</code><span>Client Secret Google. Simpan hanya di Vercel.</span><button data-copy-value="GOOGLE_CLIENT_SECRET" class="copy-button">▢</button></div><div><code>GOOGLE_DEFAULT_SCOPES</code><span>Opsional. Disarankan: drive_file,photos_upload,photos_picker</span><button data-copy-value="GOOGLE_DEFAULT_SCOPES" class="copy-button">▢</button></div><div><code>GITHUB_CLIENT_ID</code><span>Client ID dari GitHub OAuth App.</span><button data-copy-value="GITHUB_CLIENT_ID" class="copy-button">▢</button></div><div><code>GITHUB_CLIENT_SECRET</code><span>Client Secret GitHub. Simpan hanya di Vercel.</span><button data-copy-value="GITHUB_CLIENT_SECRET" class="copy-button">▢</button></div><div><code>TELEGRAM_BOT_TOKEN</code><span>Token bot dari BotFather. Simpan hanya di Vercel.</span><button data-copy-value="TELEGRAM_BOT_TOKEN" class="copy-button">▢</button></div><div><code>ALLOWED_TELEGRAM_METHODS</code><span>Opsional. Daftar metode Bot API dipisah koma.</span><button data-copy-value="ALLOWED_TELEGRAM_METHODS" class="copy-button">▢</button></div><div><code>RATE_LIMIT_PER_MINUTE</code><span>Opsional. Default 60 permintaan per menit per IP / instance.</span><button data-copy-value="RATE_LIMIT_PER_MINUTE" class="copy-button">▢</button></div><div><code>TICKET_TTL_DAYS</code><span>Opsional. Default masa berlaku tiket 180 hari.</span><button data-copy-value="TICKET_TTL_DAYS" class="copy-button">▢</button></div></div><p class="muted-note">Buat secret acak dengan password manager atau perintah <code>openssl rand -base64 48</code>. Setelah mengubah Environment Variables, lakukan Redeploy agar fungsi memakai nilai terbaru.</p></div></article>
+              <article class="panel guide-step" id="guide-google"><div class="step-number">04</div><div><div class="eyebrow">GOOGLE CLOUD</div><h3>Aktifkan Google Drive & Photos</h3><ol><li>Buka <a href="https://console.cloud.google.com/" target="_blank" rel="noopener">Google Cloud Console</a> dan pilih/buat project.</li><li>Aktifkan <b>Google Drive API</b>, <b>Google Photos Library API</b>, dan <b>Google Photos Picker API</b> yang tersedia untuk project.</li><li>Buat OAuth consent screen. Saat status Testing, tambahkan akun Google Anda sebagai Test User.</li><li>Buat OAuth Client ID tipe <b>Web application</b>.</li><li>Isi Authorized redirect URI dengan alamat <code id="googleCallbackGuide">https://domain-anda.vercel.app/api/google/callback</code>. Setelah URL deploy diketahui, sesuaikan domainnya.</li><li>Masukkan Client ID dan Client Secret ke Environment Variables Vercel, lalu redeploy.</li></ol><div class="notice warning-notice"><span>!</span><div><b>Catatan Google Photos:</b> alur Picker mengharuskan pengguna memilih media melalui Google Photos. Jangan menganggap bridge ini menyediakan akses bebas ke seluruh koleksi foto. Perhatikan pembatasan scope dan kebijakan Google yang berlaku.</div></div></div></article>
+              <article class="panel guide-step" id="guide-github-oauth"><div class="step-number">05</div><div><div class="eyebrow">GITHUB OAUTH</div><h3>Atur GitHub OAuth App</h3><ol><li>Buka <a href="https://github.com/settings/developers" target="_blank" rel="noopener">GitHub Developer Settings</a> → OAuth Apps → New OAuth App.</li><li>Isi Homepage URL dengan URL Vercel Anda.</li><li>Isi Authorization callback URL dengan <code id="githubCallbackGuide">https://domain-anda.vercel.app/api/github/callback</code>.</li><li>Salin Client ID dan buat Client Secret, kemudian masukkan ke Environment Variables Vercel.</li><li>Aplikasi Nexora Cloud dapat memakai bridge OAuth atau Personal Access Token secara langsung untuk operasi GitHub tertentu.</li></ol></div></article>
+              <article class="panel guide-step" id="guide-telegram"><div class="step-number">06</div><div><div class="eyebrow">TELEGRAM BOT API</div><h3>Hubungkan Telegram Bot</h3><ol><li>Buka <a href="https://t.me/BotFather" target="_blank" rel="noopener">@BotFather</a> di Telegram, buat bot, dan salin token.</li><li>Tambahkan token sebagai <code>TELEGRAM_BOT_TOKEN</code> di Vercel. Jangan masukkan token bot ke HTML, GitHub repository, atau APK.</li><li>Atur <code>ALLOWED_TELEGRAM_METHODS</code> hanya untuk metode yang memang dibutuhkan. Metode yang tidak diizinkan akan mendapat HTTP 403.</li><li>Redeploy lalu jalankan Test API di panel ini.</li></ol><div class="notice warning-notice"><span>!</span><div>Proxy ini untuk <b>Telegram Bot API</b>, bukan login akun Telegram pribadi melalui TDLib. Jangan kirim nomor telepon, OTP, atau session string TDLib ke endpoint ini.</div></div></div></article>
+              <article class="panel guide-step" id="guide-android"><div class="step-number">07</div><div><div class="eyebrow">ANDROID PAIRING</div><h3>Sambungkan ke aplikasi Nexora Cloud</h3><ol><li>Pastikan deployment Vercel sudah aktif dan <code>https://domain-anda.vercel.app/health</code> mengembalikan JSON dengan <code>"ok": true</code>.</li><li>Buka aplikasi Nexora Cloud → <b>Setting → Kustomisasi Penuh → Endpoint API</b>, lalu isi URL Nexora Link dengan URL Vercel Anda.</li><li>Buka menu <b>Nexora Link (API Bridge)</b>. Isi URL bridge yang sama dan API Key yang persis sama dengan <code>NEXORA_API_KEY</code> di Vercel.</li><li>Tekan <b>Simpan</b>, lalu <b>Tes Koneksi</b>. Server harus melaporkan Google, GitHub, dan Telegram sesuai Environment Variables yang tersedia.</li><li>Untuk Google, pilih scope yang diperlukan lalu tekan Masuk dengan Google. Setelah login di browser, aplikasi menangani deep link <code>nexoracloud://link</code> dan menyimpan tiket melalui Android SecretStore/Keystore.</li><li>Setelah akun Google terhubung, buka menu Google Drive & Photos pada aplikasi untuk memuat layanan cloud. GitHub dan Telegram diatur dari menu integrasinya masing-masing.</li></ol><div class="notice info-notice"><span>ⓘ</span><div>Nama menu dapat sedikit berbeda tergantung versi APK. Referensi integrasi yang menyertai proyek Nexora Cloud menyebut pengaturan URL di Kustomisasi Penuh dan URL/API Key di halaman Nexora Link.</div></div></div></article>
+              <article class="panel guide-step" id="guide-trouble"><div class="step-number">08</div><div><div class="eyebrow">TROUBLESHOOTING</div><h3>Atasi error 404: NOT_FOUND</h3><div class="trouble-list"><div><b>Periksa Root Directory</b><p>Jika repository berisi <code>index.html</code> langsung di root, set Root Directory ke root repository. Jangan menunjuk ke folder induk yang hanya berisi folder proyek.</p></div><div><b>Periksa struktur file</b><p>Di root yang dipilih Vercel harus ada <code>index.html</code>, <code>vercel.json</code>, <code>api/</code>, dan <code>lib/</code>. Jangan hanya upload ZIP ke GitHub.</p></div><div><b>Periksa framework dan output</b><p>Gunakan Framework Preset Other. Jangan paksa Output Directory seperti <code>dist</code> jika proyek tidak menghasilkan folder itu.</p></div><div><b>Periksa deployment terbaru</b><p>Buka Vercel → Deployments, pastikan deployment terbaru berstatus Ready. Buka Build Logs bila gagal.</p></div><div><b>Uji dua alamat</b><p>Buka <code>/</code> untuk dashboard dan <code>/health</code> untuk status API. Jika hanya /health yang berhasil, masalah biasanya pada root static file atau Root Directory.</p></div><div><b>Periksa environment variables</b><p>HTTP 503 dengan <code>NOT_CONFIGURED</code> berarti secret server belum lengkap atau deployment belum di-redeploy setelah perubahan env.</p></div></div></div></article>
+              <div class="guide-end-card"><div><strong>Masih ada kendala?</strong><p>Salin hasil ping dan lihat Vercel Runtime Logs tanpa membagikan API key, client secret, atau token.</p></div><button class="button primary" data-go="system">Buka diagnostik ↗</button></div>
+            </div>
+          </div>
+        </section>
+      </main>
+      <footer class="app-footer"><span>© <span id="currentYear"></span> <b>VORTEX CORE</b> · bagja.dev</span><span>NEXORA LINK <i>•</i> LOCAL CONFIGURATION STUDIO</span></footer>
     </div>
   </div>
-
-  <script>
-    const originUrl = window.location.origin;
-    document.getElementById('baseUrl').value = originUrl;
-    const out = document.getElementById('output');
-    const pill = document.getElementById('statusPill');
-
-    function copyUrl() {
-      const el = document.getElementById('baseUrl');
-      el.select();
-      navigator.clipboard?.writeText(el.value);
-      out.textContent = 'URL disalin: ' + el.value;
-    }
-
-    async function callApi(path, options = {}) {
-      out.textContent = 'Memuat ' + path + ' ...';
-      try {
-        const res = await fetch(path, options);
-        const text = await res.text();
-        try {
-          const json = JSON.parse(text);
-          out.textContent = JSON.stringify(json, null, 2);
-        } catch {
-          out.textContent = text;
-        }
-        return res.ok;
-      } catch (err) {
-        out.textContent = 'Error: ' + err.message;
-        return false;
-      }
-    }
-
-    async function testTelegram() {
-      const token = document.getElementById('tgToken').value.trim();
-      const headers = { 'Content-Type': 'application/json' };
-      if (token) headers['x-telegram-token'] = token;
-      await callApi('/api/telegram/getMe', {
-        method: 'POST',
-        headers,
-        body: JSON.stringify(token ? { token } : {})
-      });
-    }
-
-    async function testExchange() {
-      const params = new URLSearchParams(window.location.search);
-      const code = params.get('code') || 'test';
-      await callApi('/api/link/exchange', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code })
-      });
-    }
-
-    // Cek otomatis saat halaman dibuka
-    (async () => {
-      const ok = await callApi('/api/health');
-      if (ok) {
-        pill.textContent = '● Online';
-        pill.className = 'pill';
-      } else {
-        pill.textContent = '● Offline / 404';
-        pill.className = 'pill err';
-      }
-    })();
-  </script>
+  <div class="toast-region" id="toastRegion" aria-live="polite" aria-atomic="true"></div>
+  <div class="mobile-overlay" id="mobileOverlay"></div>
 </body>
 </html>

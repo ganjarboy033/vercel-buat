@@ -1,76 +1,191 @@
-# Nexora Link — API Bridge untuk Vercel
+# Nexora Link — Control Center & Vercel API Bridge
 
-Server tanpa-state yang menjembatani aplikasi Android Nexora Cloud dengan **Google (Drive & Photos)**, **GitHub**, dan **Telegram Bot API** tanpa menaruh *client secret* atau token bot di APK.
+Nexora Link adalah API bridge serverless untuk aplikasi Android Nexora Cloud. Versi ini mempertahankan endpoint bridge yang sudah ada, menambahkan dashboard web di root, dan menyediakan Theme Studio untuk mengatur tampilan browser.
 
+## 1. Struktur proyek yang benar
+
+Semua file di ZIP ini sudah berada langsung pada root proyek. Saat ZIP diekstrak, struktur pentingnya terlihat seperti berikut:
+
+```text
+.
+├── index.html                 # Dashboard utama — root web
+├── vercel.json                # Konfigurasi routing Vercel
+├── package.json
+├── manifest.webmanifest
+├── assets/
+│   ├── css/styles.css
+│   ├── js/app.js
+│   └── nexora-mark.svg
+├── api/
+│   ├── health.js
+│   ├── info.js
+│   ├── google/
+│   ├── github/
+│   ├── telegram/
+│   └── link/exchange.js
+├── lib/
+└── tests/
 ```
-Android ──(x-nexora-key)──► Nexora Link (Vercel) ──► Google / GitHub / Telegram
-   ▲                                │
-   └──── deep link nexoracloud://link?code=… (PKCE) ◄──┘
-```
 
-## Cara kerja singkat
-1. Aplikasi membuat `verifier` acak (PKCE) dan membuka `GET /api/google/start?state=…&challenge=…` di browser.
-2. Pengguna menyetujui akses di Google. Google memanggil `/api/google/callback`; server menukar kode dengan *refresh token* memakai `client_secret` miliknya.
-3. Server mengenkripsi refresh token menjadi **tiket** (AES‑256‑GCM) dan mengirim aplikasi **kode penukar 5 menit** lewat deep link. Refresh token tidak pernah muncul di URL.
-4. Aplikasi menukar kode + `verifier` di `POST /api/link/exchange` → mendapat tiket (disimpan di Android Keystore).
-5. Setiap kali butuh akses, aplikasi memanggil `POST /api/google/token` dengan tiket → dapat *access token* 1 jam, lalu memanggil Google API langsung (jadi file besar tidak melewati Vercel).
+**Jangan mengunggah folder pembungkus yang membuat `index.html` berada satu tingkat di bawah Root Directory Vercel.** Di repository yang dipilih Vercel, `index.html`, `vercel.json`, `api/`, dan `lib/` harus terlihat pada tingkat root yang sama.
 
-Server **tidak menyimpan apa pun** (tanpa database). Mencabut akses: `POST /api/google/revoke`, atau hapus aplikasi di myaccount.google.com/permissions.
+## 2. Deploy ke Vercel
 
-## Deploy
+1. Ekstrak ZIP ini.
+2. Upload seluruh isi folder hasil ekstrak ke root repository GitHub. Jangan hanya mengunggah ZIP.
+3. Buka Vercel → Add New → Project → Import Git Repository.
+4. Pilih repository tersebut.
+5. Gunakan **Framework Preset: Other**.
+6. Gunakan **Root Directory: root repository** (kosong / `.`). Bila proyek memang disimpan di subfolder repository, pilih tepat subfolder yang berisi `index.html`, `vercel.json`, `api/`, dan `lib/`.
+7. Biarkan Build Command dan Output Directory kosong/default; proyek ini tidak memerlukan bundler atau build step.
+8. Tambahkan Environment Variables pada langkah berikut, lalu Deploy.
+
+Sesudah deploy, uji:
+
+- `https://DOMAIN-ANDA/` — dashboard HTML.
+- `https://DOMAIN-ANDA/health` — alias health check.
+- `https://DOMAIN-ANDA/api/health` — fungsi health secara langsung.
+
+`/health` diarahkan ke `/api/health`. Tidak ada catch-all rewrite yang menelan `/api/...`; seluruh endpoint API dipertahankan sebagai Vercel Functions.
+
+## 3. Environment Variables
+
+Atur melalui Vercel → Project → Settings → Environment Variables. Pilih environment yang tepat (Production, Preview, Development), kemudian lakukan Redeploy setelah perubahan.
+
+| Variabel | Wajib | Keterangan |
+|---|---:|---|
+| `NEXORA_API_KEY` | Ya | API key yang dikirim aplikasi lewat header `x-nexora-key`, minimal 32 karakter acak. |
+| `BRIDGE_SECRET` | Ya | Rahasia enkripsi AES-256-GCM untuk state, kode, dan tiket, minimal 32 karakter. Jangan diganti setelah dipakai karena tiket lama tidak akan bisa dibuka. |
+| `PUBLIC_BASE_URL` | Ya | URL HTTPS deployment, tanpa garis miring akhir, misalnya `https://nexora-link.vercel.app`. |
+| `APP_REDIRECT_URI` | Tidak | Default `nexoracloud://link`, harus sesuai deep link aplikasi. |
+| `GOOGLE_CLIENT_ID` | Untuk Google | OAuth Web Client ID dari Google Cloud. |
+| `GOOGLE_CLIENT_SECRET` | Untuk Google | OAuth Web Client Secret; simpan hanya di Vercel. |
+| `GOOGLE_DEFAULT_SCOPES` | Tidak | Default `drive_file,photos_upload,photos_picker`. |
+| `GITHUB_CLIENT_ID` | Untuk GitHub OAuth | OAuth App Client ID. |
+| `GITHUB_CLIENT_SECRET` | Untuk GitHub OAuth | OAuth App Client Secret. |
+| `GITHUB_DEFAULT_SCOPE` | Tidak | Default `repo`. |
+| `TELEGRAM_BOT_TOKEN` | Untuk Telegram | Token Telegram Bot API dari BotFather. |
+| `ALLOWED_TELEGRAM_METHODS` | Tidak | Allowlist metode Bot API, dipisah koma. |
+| `RATE_LIMIT_PER_MINUTE` | Tidak | Default 60 permintaan per menit per IP/instance. Best-effort pada serverless. |
+| `TICKET_TTL_DAYS` | Tidak | Masa berlaku tiket, default 180 hari. |
+
+Buat dua nilai rahasia utama secara acak, misalnya memakai password manager atau `openssl rand -base64 48`. Jangan memasukkan client secret, bot token, atau `BRIDGE_SECRET` ke HTML, JavaScript browser, APK, maupun repository publik.
+
+### Urutan pengisian `PUBLIC_BASE_URL`
+
+Jika alamat Vercel belum diketahui, deploy pertama dapat dibuat untuk memperoleh domain. Setelah itu isi `PUBLIC_BASE_URL` dengan domain final, tambahkan Environment Variables lainnya, lalu Redeploy. Nilai tersebut dipakai untuk menyusun callback OAuth Google dan GitHub.
+
+## 4. Google Drive & Google Photos
+
+Di Google Cloud Console:
+
+1. Buat atau pilih proyek Google Cloud.
+2. Aktifkan Google Drive API, Google Photos Library API, dan Google Photos Picker API sesuai kebutuhan/eligibilitas proyek.
+3. Atur OAuth consent screen dan tambahkan akun penguji ketika aplikasi masih berstatus Testing.
+4. Buat OAuth Client ID tipe **Web application**.
+5. Tambahkan Authorized redirect URI: `https://DOMAIN-ANDA/api/google/callback`.
+6. Salin Client ID dan Client Secret ke Environment Variables Vercel.
+
+Scope yang dikenal bridge:
+
+- `drive` — akses Drive penuh; izin ini lebih sensitif dan dapat membutuhkan verifikasi Google.
+- `drive_file` — file yang dibuat/dibuka dengan aplikasi.
+- `photos_upload` — menambah media melalui Photos API.
+- `photos_appdata` — data media app-created.
+- `photos_picker` — membaca media yang dipilih pengguna melalui Photos Picker.
+
+Bridge hanya mengurus OAuth, tiket, dan refresh access token. File besar tidak melewati Vercel: aplikasi/klien Nexora Cloud mengirimnya langsung ke layanan penyedia. Pembatasan Google Photos berubah dari waktu ke waktu; implementasi Android pada arsip referensi memakai Picker untuk impor media pilihan pengguna dan Photos API untuk alur media yang dibuat aplikasi.
+
+## 5. GitHub OAuth
+
+1. Buka GitHub → Settings → Developer settings → OAuth Apps.
+2. Buat OAuth App.
+3. Set Homepage URL ke domain deployment.
+4. Set Authorization callback URL ke `https://DOMAIN-ANDA/api/github/callback`.
+5. Simpan Client ID dan Client Secret di Environment Variables Vercel.
+
+Aplikasi Nexora Cloud juga mendukung Personal Access Token secara langsung pada jalur Multi-Cloud. API GitHub dapat diubah di aplikasi jika memakai GitHub Enterprise.
+
+## 6. Telegram
+
+Buat bot dengan @BotFather dan masukkan token sebagai `TELEGRAM_BOT_TOKEN`. Batasi metode di `ALLOWED_TELEGRAM_METHODS`. Route proxy hanya menerima POST JSON, memerlukan API key Nexora, dan menolak metode yang tidak ada pada allowlist.
+
+**Pembedaan penting:** endpoint Telegram pada proyek ini adalah **Telegram Bot API proxy**, bukan login akun Telegram pribadi/TDLib. TDLib dan sesi akun Telegram pada Nexora Cloud Android berjalan di aplikasi, bukan dikirim ke bridge ini.
+
+## 7. Dashboard & Theme Studio
+
+Dashboard tersedia di `/` dan memuat:
+
+- Ringkasan status server/provider.
+- Theme Studio: mode Dark, Light, AMOLED; picker warna HEX; preset; radius; blur/glass; ukuran font; navigasi HP; branding nama/subjudul/logo.
+- Simpan otomatis ke `localStorage` browser dan tombol Export/Import JSON serta Reset Default.
+- Integrasi Google Drive/Photos, GitHub, Telegram, dan referensi Nexora Cloud Backend.
+- Form endpoint, API key, URL backend opsional, GitHub API base, webhook, batas upload/timeout lokal.
+- Ping `/health`, tes `/api/info`, tes backend dan webhook, serta log aktivitas browser.
+- Panduan langkah demi langkah deploy dan pairing Android.
+
+### Batas penting konfigurasi UI
+
+Theme Studio dan form API menyimpan preferensi pada browser/perangkat yang sedang dipakai. UI statis ini **tidak dapat mengubah Environment Variables Vercel**. Secret server tetap harus diatur melalui Vercel Project Settings. API key yang disimpan di localStorage dapat dibaca oleh JavaScript yang berjalan pada origin tersebut; gunakan hanya pada perangkat/browser tepercaya dan kosongkan setelah selesai pada perangkat bersama.
+
+Export JSON secara default dapat dilakukan tanpa API key dan webhook. Pengguna akan diminta konfirmasi sebelum memasukkan data sensitif ke file export. Jangan membagikan file export yang berisi rahasia.
+
+Log pada panel adalah aktivitas yang dilakukan dashboard di browser ini, bukan log runtime server Vercel. Log server yang sesungguhnya tersedia di Vercel → Project → Logs / Observability.
+
+## 8. Koneksi ke aplikasi Android Nexora Cloud
+
+Berdasarkan referensi proyek Nexora Cloud yang disertakan:
+
+1. Buka **Setting → Kustomisasi Penuh → Endpoint API** dan isi URL Nexora Link.
+2. Buka halaman **Nexora Link (API Bridge)**.
+3. Isi URL bridge yang sama dan API key yang sama dengan `NEXORA_API_KEY` Vercel.
+4. Simpan dan tekan **Tes Koneksi**. Aplikasi memeriksa `/health`, lalu `/api/info` dengan header `x-nexora-key`.
+5. Untuk Google, pilih scope yang diperlukan lalu mulai login. Aplikasi membuat PKCE verifier, browser menjalankan OAuth, dan callback membawa kode penukar melalui deep link `nexoracloud://link`. Aplikasi menukar kode dan menyimpan tiket melalui SecretStore.
+6. Setelah Google tersambung, halaman Google Drive & Photos pada aplikasi dapat menggunakan remote-store yang tercantum di proyek Android.
+
+Jangan menaruh Google Client Secret, GitHub Client Secret, atau Telegram Bot Token ke dalam aplikasi Android.
+
+## 9. Endpoint API yang dipertahankan
+
+| Metode | Jalur | Autentikasi | Fungsi |
+|---|---|---|---|
+| GET | `/health` | Tidak | Rewrite ke health function. |
+| GET | `/api/health` | Tidak | Status konfigurasi server dan status provider tanpa menampilkan rahasia. |
+| GET | `/api/info` | `x-nexora-key` | Kemampuan bridge, alias scope, metode Telegram yang diizinkan. |
+| GET | `/api/google/start` | PKCE query | Mulai OAuth Google. |
+| GET | `/api/google/callback` | State terenkripsi | Callback OAuth Google dan deep link. |
+| POST | `/api/google/token` | `x-nexora-key` + tiket | Memperbarui access token Google. |
+| POST | `/api/google/revoke` | `x-nexora-key` + tiket | Mencabut token Google. |
+| GET | `/api/github/start` | PKCE query | Mulai OAuth GitHub. |
+| GET | `/api/github/callback` | State terenkripsi | Callback OAuth GitHub dan deep link. |
+| POST | `/api/github/token` | `x-nexora-key` + tiket | Mengambil access token GitHub. |
+| POST | `/api/link/exchange` | `x-nexora-key` + PKCE verifier | Menukar kode singkat menjadi tiket terenkripsi. |
+| POST | `/api/telegram/{method}` | `x-nexora-key` + allowlist | Proxy Telegram Bot API. |
+
+API bridge tidak menyediakan route katalog `/api/v1/...` milik backend Node/PostgreSQL Nexora Cloud. Backend itu merupakan layanan terpisah dan harus di-deploy/diatur tersendiri bila dibutuhkan.
+
+## 10. Batas dan keamanan
+
+- Batas body Vercel Functions sekitar 4,5 MB. Gunakan bridge untuk metadata dan token, bukan transfer file besar.
+- Ticket OAuth terenkripsi AES-256-GCM; kode singkat hanya berlaku lima menit dan diverifikasi dengan PKCE.
+- Rate limiting yang saat ini ada bersifat best-effort per instance serverless; bukan sistem rate limiting global/persisten.
+- `/api/health` menampilkan status provider dan masalah konfigurasi, tetapi tidak menampilkan nilai rahasia.
+- Jangan mengaktifkan scope Google yang tidak diperlukan.
+- Gunakan Vercel logs/monitoring untuk audit runtime. Log browser tidak menggantikan log server.
+
+## 11. Pengujian lokal
+
+Node.js 20 atau lebih baru:
+
 ```bash
-cd nexora-link-vercel
-npm i -g vercel
-vercel link
-# isi variabel lingkungan (lihat .env.example) — minimal NEXORA_API_KEY, BRIDGE_SECRET, PUBLIC_BASE_URL
-vercel env add NEXORA_API_KEY production
-vercel env add BRIDGE_SECRET production
-vercel env add PUBLIC_BASE_URL production      # https://nama-proyek.vercel.app
-vercel --prod
+npm test
 ```
-Buat nilai acak: `openssl rand -base64 48`. **Jangan mengganti `BRIDGE_SECRET`** setelah dipakai (semua tiket lama menjadi tidak valid).
 
-Cek: `GET https://nama-proyek.vercel.app/health` → `{"ok":true,…,"providers":{…}}`.
+Untuk menjalankan server lokal dengan Vercel CLI:
 
-## Variabel lingkungan
-| Nama | Wajib | Fungsi |
-|---|---|---|
-| `NEXORA_API_KEY` | ya | Kunci header `x-nexora-key` (≥32 karakter). Isi sama di aplikasi: Setting → Nexora Link. |
-| `BRIDGE_SECRET` | ya | Kunci enkripsi tiket/kode/state (≥32 karakter). |
-| `PUBLIC_BASE_URL` | ya | URL publik `https://…` tanpa garis miring akhir. |
-| `APP_REDIRECT_URI` | tidak | Default `nexoracloud://link` (sudah sesuai APK). |
-| `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | untuk Google | Lihat bagian Google Cloud di bawah. |
-| `GOOGLE_DEFAULT_SCOPES` | tidak | Alias dipisah koma. |
-| `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET` | untuk login GitHub | OAuth App. (Aplikasi juga bisa memakai Personal Access Token tanpa bridge.) |
-| `TELEGRAM_BOT_TOKEN` | untuk proxy Telegram | Token bot. |
-| `ALLOWED_TELEGRAM_METHODS` | tidak | Allowlist metode Bot API. |
-| `RATE_LIMIT_PER_MINUTE` | tidak | Default 60 per IP (best‑effort per instance). |
-| `TICKET_TTL_DAYS` | tidak | Masa berlaku tiket, default 180 hari. |
+```bash
+npm install -g vercel
+vercel dev
+```
 
-## Menyiapkan Google Cloud
-1. console.cloud.google.com → buat proyek → **APIs & Services → Library**: aktifkan **Google Drive API**, **Photos Library API**, dan **Google Photos Picker API**.
-2. **OAuth consent screen**: tipe External; tambahkan akun Anda sebagai *Test user* (tanpa verifikasi, mode Testing berlaku untuk pengguna uji; refresh token mode Testing kedaluwarsa 7 hari — publikasikan aplikasi untuk penggunaan jangka panjang).
-3. **Credentials → Create OAuth client ID → Web application**. *Authorized redirect URI*: `https://nama-proyek.vercel.app/api/google/callback`.
-4. Salin Client ID & Secret ke variabel lingkungan Vercel.
-
-Catatan Google:
-- Scope `drive` penuh adalah *restricted* (butuh verifikasi untuk publik); `drive.file` hanya melihat file yang dibuat aplikasi. Pilih sesuai kebutuhan di Setting → Nexora Link.
-- **Google Photos**: sejak 31 Maret 2025 Library API hanya dapat membaca/mengelola media **yang dibuat aplikasi itu sendiri**. Untuk membaca foto pengguna dipakai **Picker API** (pengguna memilih foto di aplikasi Google Photos; aplikasi mengimpornya).
-
-## Endpoint
-| Metode & jalur | Auth | Fungsi |
-|---|---|---|
-| `GET /health` | – | Status & provider yang terkonfigurasi |
-| `GET /api/info` | key | Kemampuan server |
-| `GET /api/google/start`, `/callback` | – | OAuth Google (PKCE + state terenkripsi) |
-| `GET /api/github/start`, `/callback` | – | OAuth GitHub |
-| `POST /api/link/exchange` | key | Tukar kode deep link + verifier → tiket |
-| `POST /api/google/token` · `/revoke` | key | Access token baru · cabut akses |
-| `POST /api/github/token` | key | Access token GitHub dari tiket |
-| `POST /api/telegram/{metode}` | key | Proxy Telegram Bot API (allowlist) |
-
-## Batas & keamanan
-- Body fungsi Vercel ±4,5 MB: bridge untuk **metadata dan token**, bukan transfer file besar (aplikasi mengunggah/mengunduh langsung ke Google/GitHub/Telegram).
-- Tiket = akses ke akun penyedia; aplikasi menyimpannya terenkripsi di Android Keystore. Jika tiket bocor, cabut lewat `/api/google/revoke`.
-- Rate limit bersifat *best‑effort* (memori per instance serverless). Untuk produksi besar tambahkan Vercel Firewall / Upstash.
-- Tes: `npm test` (10 tes: kripto, PKCE, alur OAuth penuh dengan fetch tiruan, isolasi provider, proxy Telegram, rate limit).
+Isi environment lokal (misalnya melalui `.env.local`) sebelum menguji flow OAuth. Jangan commit file environment yang berisi secret.

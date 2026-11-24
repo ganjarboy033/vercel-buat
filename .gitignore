@@ -1,4 +1,7 @@
 node_modules/
+.vercel/
 .env
-dist/
-build/
+.env.*
+!.env.example
+.DS_Store
+Thumbs.db
