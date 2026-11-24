@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nexora Link Bridge</title>
+  <style>
+    body { font-family: system-ui, sans-serif; background: #0f172a; color: #f8fafc; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 16px; }
+    .card { background: #1e293b; border: 1px solid #334155; border-radius: 16px; padding: 24px; max-width: 420px; width: 100%; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
+    h1 { font-size: 1.25rem; margin: 0 0 8px; color: #38bdf8; }
+    p { font-size: 0.9rem; color: #94a3b8; line-height: 1.5; margin: 0 0 16px; }
+    .badge { display: inline-block; background: #064e3b; color: #34d399; padding: 4px 10px; border-radius: 999px; font-size: 0.75rem; font-weight: 600; margin-bottom: 16px; }
+    .endpoints { background: #0f172a; border-radius: 8px; padding: 12px; font-family: monospace; font-size: 0.8rem; color: #cbd5e1; }
+    .endpoints div { margin-bottom: 6px; }
+    .endpoints div:last-child { margin-bottom: 0; }
+    a { color: #38bdf8; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="badge">● Server Aktif</div>
+    <h1>Nexora Link API Bridge</h1>
+    <p>Backend OAuth & Telegram Bridge untuk aplikasi Android <strong>Nexora Cloud</strong> berjalan normal.</p>
+    <div class="endpoints">
+      <div>• Health: <a href="/api/health">/api/health</a></div>
+      <div>• Info: <a href="/api/info">/api/info</a></div>
+      <div>• Google OAuth: /api/google/start</div>
+      <div>• GitHub OAuth: /api/github/start</div>
+    </div>
+  </div>
+</body>
+</html>
