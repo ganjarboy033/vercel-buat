@@ -2,31 +2,172 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Nexora Link Bridge</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Nexora Link — Cloud Bridge App</title>
   <style>
-    body { font-family: system-ui, sans-serif; background: #0f172a; color: #f8fafc; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 16px; }
-    .card { background: #1e293b; border: 1px solid #334155; border-radius: 16px; padding: 24px; max-width: 420px; width: 100%; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
-    h1 { font-size: 1.25rem; margin: 0 0 8px; color: #38bdf8; }
-    p { font-size: 0.9rem; color: #94a3b8; line-height: 1.5; margin: 0 0 16px; }
-    .badge { display: inline-block; background: #064e3b; color: #34d399; padding: 4px 10px; border-radius: 999px; font-size: 0.75rem; font-weight: 600; margin-bottom: 16px; }
-    .endpoints { background: #0f172a; border-radius: 8px; padding: 12px; font-family: monospace; font-size: 0.8rem; color: #cbd5e1; }
-    .endpoints div { margin-bottom: 6px; }
-    .endpoints div:last-child { margin-bottom: 0; }
-    a { color: #38bdf8; text-decoration: none; }
+    :root {
+      --bg: #090d16;
+      --surface: #111827;
+      --surface-2: #1f2937;
+      --border: #2d3748;
+      --primary: #38bdf8;
+      --primary-dark: #0284c7;
+      --success: #10b981;
+      --danger: #ef4444;
+      --text: #f3f4f6;
+      --muted: #9ca3af;
+    }
+    * { box-sizing: border-box; font-family: system-ui, -apple-system, sans-serif; }
+    body { margin: 0; background: var(--bg); color: var(--text); padding: 16px; display: flex; justify-content: center; }
+    .app { width: 100%; max-width: 480px; display: flex; flex-direction: column; gap: 14px; padding-bottom: 40px; }
+    header { display: flex; align-items: center; justify-content: space-between; background: var(--surface); padding: 14px 16px; border-radius: 16px; border: 1px solid var(--border); }
+    .brand h1 { margin: 0; font-size: 1.1rem; color: var(--primary); letter-spacing: 0.3px; }
+    .brand span { font-size: 0.75rem; color: var(--muted); }
+    .pill { font-size: 0.72rem; font-weight: 600; padding: 4px 10px; border-radius: 99px; background: rgba(16,185,129,0.15); color: var(--success); border: 1px solid rgba(16,185,129,0.3); }
+    .pill.err { background: rgba(239,68,68,0.15); color: var(--danger); border-color: rgba(239,68,68,0.3); }
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 16px; }
+    .card h2 { margin: 0 0 10px; font-size: 0.92rem; color: #e5e7eb; display: flex; align-items: center; justify-content: space-between; }
+    .grid-btn { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    button, .btn {
+      background: var(--surface-2); color: var(--text); border: 1px solid var(--border);
+      padding: 11px 12px; border-radius: 12px; font-size: 0.84rem; font-weight: 600;
+      cursor: pointer; text-align: center; text-decoration: none; display: inline-flex;
+      align-items: center; justify-content: center; gap: 6px; transition: 0.15s;
+    }
+    button:active, .btn:active { transform: scale(0.98); }
+    .btn-primary { background: var(--primary-dark); border-color: var(--primary); color: #fff; }
+    .field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
+    label { font-size: 0.76rem; color: var(--muted); }
+    input {
+      background: var(--bg); border: 1px solid var(--border); color: var(--text);
+      padding: 10px 12px; border-radius: 10px; font-size: 0.85rem; outline: none;
+    }
+    input:focus { border-color: var(--primary); }
+    pre {
+      background: #05080f; border: 1px solid var(--border); border-radius: 10px;
+      padding: 12px; font-size: 0.76rem; color: #a5f3fc; overflow-x: auto;
+      margin: 0; max-height: 220px; white-space: pre-wrap; word-break: break-all;
+    }
+    .copy-row { display: flex; gap: 8px; }
+    .copy-row input { flex: 1; color: var(--primary); font-family: monospace; font-size: 0.78rem; }
   </style>
 </head>
 <body>
-  <div class="card">
-    <div class="badge">● Server Aktif</div>
-    <h1>Nexora Link API Bridge</h1>
-    <p>Backend OAuth & Telegram Bridge untuk aplikasi Android <strong>Nexora Cloud</strong> berjalan normal.</p>
-    <div class="endpoints">
-      <div>• Health: <a href="/api/health">/api/health</a></div>
-      <div>• Info: <a href="/api/info">/api/info</a></div>
-      <div>• Google OAuth: /api/google/start</div>
-      <div>• GitHub OAuth: /api/github/start</div>
+  <div class="app">
+    <header>
+      <div class="brand">
+        <h1>NEXORA LINK</h1>
+        <span>Bridge & OAuth Client</span>
+      </div>
+      <div id="statusPill" class="pill">Memeriksa...</div>
+    </header>
+
+    <!-- Base URL untuk dipasang di APK Nexora Cloud -->
+    <div class="card">
+      <h2>URL Server (Untuk Aplikasi Android)</h2>
+      <div class="copy-row">
+        <input id="baseUrl" type="text" readonly />
+        <button class="btn-primary" onclick="copyUrl()">Salin</button>
+      </div>
+    </div>
+
+    <!-- Koneksi OAuth Asli -->
+    <div class="card">
+      <h2>Hubungkan Akun Cloud</h2>
+      <div class="grid-btn">
+        <a href="/api/google/start" class="btn btn-primary">Login Google Drive</a>
+        <a href="/api/github/start" class="btn btn-primary">Login GitHub</a>
+        <button onclick="callApi('/api/info')">Cek /api/info</button>
+        <button onclick="callApi('/api/health')">Cek /api/health</button>
+      </div>
+    </div>
+
+    <!-- Bridge Telegram / Link Exchange -->
+    <div class="card">
+      <h2>Telegram & Link Bridge</h2>
+      <div class="field">
+        <label>Bot Token (Opsional jika sudah di ENV Vercel)</label>
+        <input id="tgToken" type="password" placeholder="123456:ABC-DEF..." />
+      </div>
+      <div class="grid-btn">
+        <button onclick="testTelegram()">Tes Bot (getMe)</button>
+        <button onclick="testExchange()">Tes /api/link/exchange</button>
+      </div>
+    </div>
+
+    <!-- Output Response Asli -->
+    <div class="card">
+      <h2>
+        <span>Respons Server</span>
+        <button style="padding:4px 8px;font-size:0.72rem" onclick="document.getElementById('output').textContent='Siap.'">Bersihkan</button>
+      </h2>
+      <pre id="output">Menghubungkan ke backend...</pre>
     </div>
   </div>
+
+  <script>
+    const originUrl = window.location.origin;
+    document.getElementById('baseUrl').value = originUrl;
+    const out = document.getElementById('output');
+    const pill = document.getElementById('statusPill');
+
+    function copyUrl() {
+      const el = document.getElementById('baseUrl');
+      el.select();
+      navigator.clipboard?.writeText(el.value);
+      out.textContent = 'URL disalin: ' + el.value;
+    }
+
+    async function callApi(path, options = {}) {
+      out.textContent = 'Memuat ' + path + ' ...';
+      try {
+        const res = await fetch(path, options);
+        const text = await res.text();
+        try {
+          const json = JSON.parse(text);
+          out.textContent = JSON.stringify(json, null, 2);
+        } catch {
+          out.textContent = text;
+        }
+        return res.ok;
+      } catch (err) {
+        out.textContent = 'Error: ' + err.message;
+        return false;
+      }
+    }
+
+    async function testTelegram() {
+      const token = document.getElementById('tgToken').value.trim();
+      const headers = { 'Content-Type': 'application/json' };
+      if (token) headers['x-telegram-token'] = token;
+      await callApi('/api/telegram/getMe', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(token ? { token } : {})
+      });
+    }
+
+    async function testExchange() {
+      const params = new URLSearchParams(window.location.search);
+      const code = params.get('code') || 'test';
+      await callApi('/api/link/exchange', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code })
+      });
+    }
+
+    // Cek otomatis saat halaman dibuka
+    (async () => {
+      const ok = await callApi('/api/health');
+      if (ok) {
+        pill.textContent = '● Online';
+        pill.className = 'pill';
+      } else {
+        pill.textContent = '● Offline / 404';
+        pill.className = 'pill err';
+      }
+    })();
+  </script>
 </body>
 </html>
